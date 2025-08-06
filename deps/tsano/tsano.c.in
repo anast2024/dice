@@ -605,3 +605,15 @@ __tsan_set_fiber_name(void *fiber, const char *name)
     (void)fiber;
     (void)name;
 }
+
+void __asan_poison_memory_region(void const volatile *addr, size_t size)
+{
+    (void)addr;
+    (void)size;
+}
+
+void __asan_unpoison_memory_region(void const volatile *addr, size_t size)
+{
+    (void)addr;
+    (void)size;
+}

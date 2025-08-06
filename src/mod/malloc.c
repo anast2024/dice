@@ -22,6 +22,20 @@ INTERPOSE(void *, malloc, size_t size)
     return ev.ret;
 }
 
+INTERPOSE(void, __asan_unpoison_memory_region, void const volatile *addr, size_t size)
+{
+    struct malloc_event ev = {
+        .pc   = INTERPOSE_PC,
+        .size = size,
+        .ret  = 0,
+    };
+
+    metadata_t md = {0};
+    PS_PUBLISH(INTERCEPT_BEFORE, EVENT_MALLOC, &ev, &md);
+    ev.ret = (void *) addr;
+    PS_PUBLISH(INTERCEPT_AFTER, EVENT_MALLOC, &ev, &md);
+}
+
 INTERPOSE(void *, calloc, size_t number, size_t size)
 {
     struct calloc_event ev = {
@@ -64,6 +78,19 @@ INTERPOSE(void, free, void *ptr)
     metadata_t md = {0};
     PS_PUBLISH(INTERCEPT_BEFORE, EVENT_FREE, &ev, &md);
     REAL(free, ptr);
+    PS_PUBLISH(INTERCEPT_AFTER, EVENT_FREE, &ev, &md);
+}
+
+INTERPOSE(void, __asan_poison_memory_region, void const volatile *addr, size_t size)
+{
+    (void)size;
+    struct free_event ev = {
+        .pc  = INTERPOSE_PC,
+        .ptr = (void *) addr,
+    };
+
+    metadata_t md = {0};
+    PS_PUBLISH(INTERCEPT_BEFORE, EVENT_FREE, &ev, &md);
     PS_PUBLISH(INTERCEPT_AFTER, EVENT_FREE, &ev, &md);
 }
 

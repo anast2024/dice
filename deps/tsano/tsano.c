@@ -1012,3 +1012,58 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size)
     (void)addr;
     (void)size;
 }
+
+
+uint16_t __sanitizer_unaligned_load16(const void *p)
+{
+    return *(const uint16_t*)p;
+}
+
+uint32_t __sanitizer_unaligned_load32(const void *p)
+{
+    return *(const uint32_t*)p;
+}
+
+uint64_t __sanitizer_unaligned_load64(const void *p)
+{
+    return *(const uint64_t*)p;
+}
+
+void __sanitizer_unaligned_store16(void *p, uint16_t x)
+{
+  memcpy(p, &x, sizeof(uint16_t));
+}
+
+void __sanitizer_unaligned_store32(void *p, uint32_t x)
+{
+  memcpy(p, &x, sizeof(uint32_t));
+}
+
+void __sanitizer_unaligned_store64(void *p, uint64_t x)
+{
+  memcpy(p, &x, sizeof(uint64_t));
+}
+
+void __tsan_mutex_pre_signal(void *addr, unsigned flags)
+{
+    (void)addr;
+    (void)flags;
+}
+
+void __tsan_mutex_post_signal(void *addr, unsigned flags)
+{
+    (void)addr;
+    (void)flags;
+}
+
+void __tsan_mutex_pre_divert(void *addr, unsigned flags)
+{
+    (void)addr;
+    (void)flags;
+}
+
+void __tsan_mutex_post_divert(void *addr, unsigned flags)
+{
+    (void)addr;
+    (void)flags;
+}

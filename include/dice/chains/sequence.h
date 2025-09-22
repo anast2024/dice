@@ -9,14 +9,13 @@
 #include <dice/pubsub.h>
 #include <dice/self.h>
 
-#define SEQUENCE_EVENT  7
-#define SEQUENCE_BEFORE 8
-#define SEQUENCE_AFTER  9
+#define SEQUENCE_PREPARE 7
+#define SEQUENCE_RESUME  8
 
 struct plan {
     metadata_t _;
     metadata_t *self;
-    chain_id from;
+    chain_id chain;
     type_id type;
     thread_id next;
     bool wake;

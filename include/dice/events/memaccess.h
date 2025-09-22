@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <dice/types.h>
+
 #define EVENT_MA_READ         30
 #define EVENT_MA_WRITE        31
 #define EVENT_MA_AREAD        32
@@ -17,6 +19,12 @@
 #define EVENT_MA_CMPXCHG      36
 #define EVENT_MA_CMPXCHG_WEAK 37
 #define EVENT_MA_FENCE        38
+
+static inline bool
+is_memaccess(type_id type)
+{
+    return type >= EVENT_MA_READ && type <= EVENT_MA_FENCE;
+}
 
 struct ma_read_event {
     const void *pc;

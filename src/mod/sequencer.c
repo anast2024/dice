@@ -10,6 +10,8 @@
 #include <dice/self.h>
 #include <dice/switcher.h>
 
+DICE_MODULE_INIT()
+
 static void
 _sequence(type_id type, void *event, struct plan *plan)
 {
@@ -62,12 +64,6 @@ PS_SUBSCRIBE(CAPTURE_EVENT, ANY_TYPE, {
     _sequence(type, event, &plan);
 })
 
-static bool
-_is_memaccess(type_id type)
-{
-    return type >= EVENT_MA_READ && type <= EVENT_MA_FENCE;
-}
-
 PS_SUBSCRIBE(CAPTURE_BEFORE, ANY_TYPE, {
     struct plan plan;
     plan._     = (struct metadata){0};
@@ -85,7 +81,7 @@ PS_SUBSCRIBE(CAPTURE_BEFORE, ANY_TYPE, {
 
     // either atomic memaccess or call. If memaccess, we should yield, otherwise
     // the yield happens after the call.
-    plan.yield = _is_memaccess(type);
+    plan.yield = is_memaccess(type);
 
     _sequence(type, event, &plan);
 })
@@ -103,9 +99,7 @@ PS_SUBSCRIBE(CAPTURE_AFTER, ANY_TYPE, {
     // if we did a call, previously, then we should yield. No matter what call
     // that was (even THREAD_CREATE). We are assuming all calls are potentially
     // blocking.
-    plan.yield = !_is_memaccess(type);
+    plan.yield = !is_memaccess(type);
 
     _sequence(type, event, &plan);
 })
-
-DICE_MODULE_INIT()

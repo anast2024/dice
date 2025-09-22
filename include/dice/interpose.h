@@ -115,7 +115,10 @@ _real_sym(const char *name, const char *ver)
         return dlvsym(RTLD_NEXT, name, ver);
 #endif
     (void)ver;
-    return dlsym(RTLD_NEXT, name);
+    void *ptr = dlsym(RTLD_NEXT, name);
+    if (ptr)
+        return ptr;
+    return dlsym(RTLD_DEFAULT, name);
 }
 
 /* Finds a real function by calling dlsym or dlvsym. */

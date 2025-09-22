@@ -39,6 +39,8 @@ static struct chain _chains[MAX_CHAINS];
 // initializer
 // -----------------------------------------------------------------------------
 
+DICE_MODULE_INIT()
+
 DICE_HIDE bool
 ps_initd_(void)
 {
@@ -79,8 +81,6 @@ ps_init_(void)
 {
     (void)ps_initd_();
 }
-
-DICE_MODULE_INIT()
 
 // -----------------------------------------------------------------------------
 // subscribe interface
@@ -138,15 +138,16 @@ _ps_subscribe_type(chain_id chain, type_id type, ps_callback_f cb, int prio,
 int
 ps_subscribe(chain_id chain, type_id type, ps_callback_f cb, int prio)
 {
-    ps_init_(); // ensure initialized
-
-    log_debug("Subscribe %u_%u_%d", chain, type, prio);
     if (ps_dispatch_chain_on_(chain) && prio <= ps_dispatch_max()) {
         log_debug("Ignore subscription %u_%u_%d", chain, type, prio);
         return PS_OK;
     }
     if (chain == CHAIN_CONTROL)
         return PS_OK;
+
+    ps_init_(); // ensure initialized
+    log_debug("Subscribe %u_%u_%d", chain, type, prio);
+
     if (chain > MAX_CHAINS)
         return PS_INVALID;
     if (type != ANY_TYPE)

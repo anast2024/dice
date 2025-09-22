@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include <dice/interpose.h>
-#include <dice/mempool.h>
 #include <vsync/spinlock/caslock.h>
 
 static size_t _sizes[] = {32,
@@ -79,12 +78,6 @@ mempool_ensure_initd(void)
     if (_mp.pool.memory == NULL)
         mempool_init(MEMPOOL_SIZE);
 }
-
-DICE_MODULE_INIT({
-    caslock_acquire(&_mp.lock);
-    mempool_ensure_initd();
-    caslock_release(&_mp.lock);
-})
 
 DICE_HIDE_IF void *
 mempool_alloc(size_t n)

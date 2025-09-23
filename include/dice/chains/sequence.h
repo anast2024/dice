@@ -9,8 +9,8 @@
 #include <dice/pubsub.h>
 #include <dice/self.h>
 
-#define SEQUENCE_PREPARE 7
-#define SEQUENCE_RESUME  8
+#define SEQUENCE_DECIDE 7
+#define SEQUENCE_RESUME 8
 
 struct plan {
     metadata_t _;

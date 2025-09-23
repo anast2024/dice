@@ -2,9 +2,11 @@
  * Copyright (C) 2025 Huawei Technologies Co., Ltd.
  * SPDX-License-Identifier: 0BSD
  */
-#include "dice/events/thread.h"
+#include <assert.h>
+
 #include <dice/chains/sequence.h>
 #include <dice/events/memaccess.h>
+#include <dice/events/thread.h>
 #include <dice/log.h>
 #include <dice/module.h>
 #include <dice/self.h>
@@ -12,18 +14,37 @@
 
 DICE_MODULE_INIT()
 
+static caslock_t lock_;
+static uint64_t clock_;
+static vatomic32_t exclusive_;
+
 static void
 _sequence(type_id type, void *event, struct plan *plan)
 {
     if (self_retired(plan->self))
         return;
 
-    PS_PUBLISH(SEQUENCE_PREPARE, type, event, &plan->_);
-    if (plan->wake)
+    if (!(plan->chain == CAPTURE_AFTER && plan->type == EVENT_THREAD_CREATE))
+        assert(vatomic_read(&exclusive_) == 1);
+    PS_PUBLISH(SEQUENCE_DECIDE, type, event, &plan->_);
+    if (!(plan->chain == CAPTURE_AFTER && plan->type == EVENT_THREAD_CREATE))
+        assert(vatomic_read(&exclusive_) == 1);
+    if (plan->chain == CAPTURE_BEFORE && plan->type == EVENT_THREAD_CREATE) {
+        assert(vatomic_dec_get(&exclusive_) == 0);
+    }
+    if (plan->wake) {
+        assert(vatomic_dec_get(&exclusive_) == 0);
         switcher_wake(plan->next, 0);
+    }
     if (plan->yield) {
         switcher_yield(self_id(plan->self), true);
         PS_PUBLISH(SEQUENCE_RESUME, type, event, &plan->_);
+
+        assert(caslock_tryacquire(&lock_));
+        clock_++;
+        log_printf("CLOCK: %lu\n", clock_);
+        caslock_release(&lock_);
+        assert(vatomic_inc_get(&exclusive_) == 1);
     }
 }
 
@@ -53,6 +74,7 @@ PS_SUBSCRIBE(CAPTURE_EVENT, ANY_TYPE, {
             // to pass the thread ID from the parent. That would however require
             // the "self" component to be known already in the interceptor,
             // which is super ugly.
+            assert(vatomic_inc_get(&exclusive_) == 1);
             plan.wake  = self_id(md) != MAIN_THREAD;
             plan.yield = self_id(md) != MAIN_THREAD;
             break;

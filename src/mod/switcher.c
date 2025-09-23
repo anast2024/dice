@@ -23,6 +23,7 @@
 
 DICE_MODULE_INIT()
 
+#define SWITCHER_LOG
 #ifndef SWITCHER_LOG
     #undef log_debug
     #define log_debug(...)                                                     \

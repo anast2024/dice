@@ -36,7 +36,7 @@ INTERPOSE(void, AnnotateRWLockDestroy, const char *file, int line,
 
 INTERPOSE(void, AnnotateRWLockAcquired, const char *file, int line,const volatile void *lock, long is_w)
 {
-    struct annotate_rwlock_acquire_event ev = {
+    struct AnnotateRWLockAcquired_event ev = {
         .file = file,
         .line = line,
         .lock = lock,
@@ -50,7 +50,7 @@ INTERPOSE(void, AnnotateRWLockAcquired, const char *file, int line,const volatil
 
 INTERPOSE(void, AnnotateRWLockReleased,const char *file, int line,const volatile void *lock, long is_w)
 {
-    struct annotate_rwlock_release_event ev = {
+    struct AnnotateRWLockReleased_event ev = {
         .file = file,
         .line = line,
         .lock = lock,
